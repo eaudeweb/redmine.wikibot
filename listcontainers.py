@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 import json
-import urllib, urllib2, os, sys, logging, time
-import ConfigParser, getopt
+import urllib,  os, sys, logging, time
+import configparser, getopt
 from operator import itemgetter, attrgetter, methodcaller
 
-from redmine import Redmine
+import sys
+import redminelib
+from redminelib import Redmine
+from redminelib.exceptions import ResourceAttrError, ResourceNotFoundError, JSONDecodeError, ValidationError
 
 class Discover(object):
 
@@ -39,11 +42,11 @@ class Discover(object):
         rancherSecretKey = self.config.get(environment, "rancher_secret_key")
         realm = "Enter API access key and secret key as username and password"
 
-        auth_handler = urllib2.HTTPBasicAuthHandler()
+        auth_handler = urllib.request.HTTPBasicAuthHandler()
         auth_handler.add_password(realm=realm, uri=rancherUrl, user=rancherAccessKey, passwd=rancherSecretKey)
-        opener = urllib2.build_opener(auth_handler)
-        urllib2.install_opener(opener)
-        f = urllib2.urlopen(url)
+        opener = urllib.request.build_opener(auth_handler)
+        urllib.install_opener(opener)
+        f = urllib.urlopen(url)
         rawdata = f.read()
         f.close()
         return json.loads(rawdata)
@@ -84,12 +87,12 @@ class Discover(object):
 #           content.append('\n')
 
 if __name__ == '__main__':
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     config.read('rancher.cfg')
     dryrun = False
     try:
         opts, args = getopt.getopt(sys.argv[1:], "vn")
-    except getopt.GetoptError, err:
+    except getopt.GetoptError as err:
         sys.exit(2)
     for o, a in opts:
         if o == "-v":
