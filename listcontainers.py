@@ -8,6 +8,7 @@ import sys
 import redminelib
 from redminelib import Redmine
 from redminelib.exceptions import ResourceAttrError, ResourceNotFoundError, JSONDecodeError, ValidationError
+import time
 
 class Discover(object):
 
@@ -49,7 +50,7 @@ class Discover(object):
         f = urllib.request.urlopen(url)
         rawdata = f.read()
         f.close()
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         result = json.loads(rawdata.decode("utf-8"))
         return result
 
@@ -109,7 +110,8 @@ if __name__ == '__main__':
     pageTitle = config.get('wiki','containertitle')
     content = []
     content.append('h1. ' + pageTitle + '\n\n')
-    content.append('Automatically discovered on ' + time.strftime('%d %B %Y') + '. _Do not update this page manually._')
+    #content.append('Automatically discovered on ' + time.strftime('%d %B %Y') + '. _Do not update this page manually._')
+    content.append('Automatically runned on ' + time.strftime("%d %B %Y, %H:%M:%S") + '. _Do not update this page manually._')
 
     for environment in environments:
         #print environment
