@@ -45,11 +45,14 @@ class Discover(object):
         auth_handler = urllib.request.HTTPBasicAuthHandler()
         auth_handler.add_password(realm=realm, uri=rancherUrl, user=rancherAccessKey, passwd=rancherSecretKey)
         opener = urllib.request.build_opener(auth_handler)
-        urllib.install_opener(opener)
-        f = urllib.urlopen(url)
+        urllib.request.install_opener(opener)
+        f = urllib.request.urlopen(url)
         rawdata = f.read()
         f.close()
-        return json.loads(rawdata)
+        import pdb; pdb.set_trace()
+        result = json.loads(rawdata.decode("utf-8"))
+        return result
+
 
     def load_containers(self, environment):
         self.containers = {}
