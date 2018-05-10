@@ -18,6 +18,10 @@ class Discover(object):
     def __init__(self, config):
         self.config = config
 
+    def write_stdout(self, run_data):
+        #pass
+        print (run_data)
+
     def write_page(self, content):
         server = self.config.get('wiki','server')
         apikey = self.config.get('wiki','apikey')
@@ -29,6 +33,18 @@ class Discover(object):
 
         try:
             wiki_page = server.wiki_page.get(pageName, project_id=project.id)
+
+            # facem split pe text sa am o lista cu toate elementele aranjate
+            # dupa split pargurg cu un for lista si salvez elementele intr-o lista noua
+            # in main dupa content mai adaug un for care sa imi parcurga lista noua si sa adauge toate textele
+            run_data = []
+            result = wiki_page.text.split('\n')
+            for element in result:
+                if (element.startswith('Automatically runned on ')):
+                    run_data.append(element)
+                    print(run_data)
+            import pdb; pdb.set_trace()
+            
             server.wiki_page.update(pageName, project_id=project.id, text=content)
         except ResourceNotFoundError:
             wiki_page = server.wiki_page.create(project_id=project.id, title=pageName, text=content)
