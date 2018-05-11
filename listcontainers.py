@@ -18,11 +18,40 @@ class Discover(object):
     def __init__(self, config):
         self.config = config
 
-    def write_stdout(self, run_data):
-        #pass
-        print (run_data)
+    def create_content(self, config, run_data=[]):
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "vn")
+        except getopt.GetoptError as err:
+            sys.exit(2)
+        for o, a in opts:
+            if o == "-v":
+                logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+            if o == "-n":
+                dryrun = True
+        if len(args) > 0:
+            environments = args
+        else:
+            environments = config.get("general", "environments").split()
+        pageTitle = config.get('wiki','containertitle')
+        content = []
+        content.append('h1. ' + pageTitle + '\n\n')
+        #content.append('Automatically discovered on ' + time.strftime('%d %B %Y') + '. _Do not update this page manually._')
+        content.append('Automatically runned on ' + time.strftime("%d %B %Y, %H:%M:%S") + '. _Do not update this page manually._')
+        content.extend(run_data)
 
-    def write_page(self, content):
+        for environment in environments:
+            #print environment
+            logging.debug("Environment: %s", environment)
+            envLabel = config.get(environment, 'label')
+            content.append('\nh2. Environment: {}\n'.format(envLabel))
+            content.append('\n')
+    #       disc.load_hosts(environment)
+            self.load_containers(environment)
+            self.buildgraph(content)
+            content.append('\n')
+        return "\n".join(content)
+
+    def write_page(self,  config):
         server = self.config.get('wiki','server')
         apikey = self.config.get('wiki','apikey')
         projectName = self.config.get('wiki','project')
@@ -33,25 +62,23 @@ class Discover(object):
 
         try:
             wiki_page = server.wiki_page.get(pageName, project_id=project.id)
-
-            # facem split pe text sa am o lista cu toate elementele aranjate
-            # dupa split pargurg cu un for lista si salvez elementele intr-o lista noua
-            # in main dupa content mai adaug un for care sa imi parcurga lista noua si sa adauge toate textele
             run_data = []
             result = wiki_page.text.split('\n')
             for element in result:
                 if (element.startswith('Automatically runned on ')):
                     run_data.append(element)
-                    print(run_data)
-            import pdb; pdb.set_trace()
-            
+                    print(run_data)       
+            content = self.create_content(config, run_data)
             server.wiki_page.update(pageName, project_id=project.id, text=content)
+
         except ResourceNotFoundError:
+            content = self.create_content(config)
             wiki_page = server.wiki_page.create(project_id=project.id, title=pageName, text=content)
-    
+   
     def write_stdout(self, content):
         #pass
         print (content)
+
 
     def get_operation(self, environment, url):
         rancherUrl = self.config.get(environment, "rancher_url", vars={'env': environment})
@@ -110,38 +137,9 @@ if __name__ == '__main__':
     config = configparser.SafeConfigParser()
     config.read('rancher.cfg')
     dryrun = False
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "vn")
-    except getopt.GetoptError as err:
-        sys.exit(2)
-    for o, a in opts:
-        if o == "-v":
-            logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-        if o == "-n":
-            dryrun = True
-    if len(args) > 0:
-        environments = args
-    else:
-        environments = config.get("general", "environments").split()
-    pageTitle = config.get('wiki','containertitle')
-    content = []
-    content.append('h1. ' + pageTitle + '\n\n')
-    #content.append('Automatically discovered on ' + time.strftime('%d %B %Y') + '. _Do not update this page manually._')
-    content.append('Automatically runned on ' + time.strftime("%d %B %Y, %H:%M:%S") + '. _Do not update this page manually._')
-
-    for environment in environments:
-        #print environment
-        logging.debug("Environment: %s", environment)
-        envLabel = config.get(environment, 'label')
-        content.append('\nh2. Environment: {}\n'.format(envLabel))
-        content.append('\n')
-        disc = Discover(config)
-#       disc.load_hosts(environment)
-        disc.load_containers(environment)
-        disc.buildgraph(content)
-        content.append('\n')
+    disc = Discover(config)
     if dryrun:
-        disc.write_stdout("\n".join(content))
+        disc.write_stdout(disc.create_content(config))
     else:
-        disc.write_page("\n".join(content))
+        disc.write_page(config)
     #print "Done"
