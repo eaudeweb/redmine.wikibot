@@ -5,3 +5,9 @@ Install
 - clone git repo
 - edit rancher.cfg from env-wikibot/
 - run docker-compose file with: `docker-compose up -d`
+
+# wikibot
+
+Author: Andra Necula
+
+[![Docker]( https://dockerbuildbadges.quelltext.eu/status.svg?organization=anecula&repository=redmine.wikibot)](https://hub.docker.com/r/anecula/redmine.wikibot/builds)
