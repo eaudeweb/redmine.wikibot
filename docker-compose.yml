@@ -3,7 +3,7 @@ version: '2'
 services:
 
   wikibot:
-    image: anecula/wikibot
+    image: eaudeweb/redmine.wikibot
     container_name: redmine-wikibot
     volumes:
          - "./env-wikibot:/env-wikibot"
