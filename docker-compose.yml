@@ -1,0 +1,11 @@
+version: '2'
+
+services:
+
+  wikibot:
+    image: anecula/wikibot
+    container_name: redmine-wikibot
+    volumes:
+         - "./env-wikibot:/env-wikibot"
+    command: python3 listcontainers.py 
+    #command: tail -f /dev/null
